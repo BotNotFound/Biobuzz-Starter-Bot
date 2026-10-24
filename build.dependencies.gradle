@@ -17,7 +17,7 @@ dependencies {
 
     // Pedro Pathing stuff ahh
     implementation 'com.pedropathing:revhub:3.0.2'
-    implementation 'com.pedropathing:tuning:1.0.0'
+    implementation 'com.pedropathing:tuning:1.0.1'
 
 }
 
