@@ -36,7 +36,7 @@ public class PedroAuto extends LinearOpMode {
     // Autonomous routine
     public Command autoRoutine() {
         return sequential(
-                instant(() -> launcher.setVelocity(1350)),
+                instant(() -> launcher.setVelocity(1450)),
                 follow(follower, startPath()),
                 instant(() -> launcher.setVelocity(0)),
                 follow(follower, backEnd())
