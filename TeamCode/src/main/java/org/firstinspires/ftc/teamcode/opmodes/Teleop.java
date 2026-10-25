@@ -46,12 +46,16 @@ public class Teleop extends OpMode {
 
         follower.setPose(new Pose(0,0,Math.toRadians(0)));
     }
+    private double scaleCubic(double input) {
+        return input * input * input;
+    }
+
     @Override
     public void loop() {
         DrivePowers powers = ManualDrive.fieldCentric(
-                -gamepad1.left_stick_y,
-                -gamepad1.left_stick_x,
-                -gamepad1.right_stick_x,
+                scaleCubic(-gamepad1.left_stick_y),
+                scaleCubic(-gamepad1.left_stick_x),
+                scaleCubic(-gamepad1.right_stick_x),
                 follower.pose().heading()
         );
         follower.manual(powers);
