@@ -86,7 +86,7 @@ public class Teleop extends OpMode {
         if (gamepad1.left_trigger_pressed) {
             intake.setPower(intakePower);
             leftIntakeServo.setPower(-intakePower);
-            rightIntakeServo.setPower(intakePower);
+            rightIntakeServo.setPower(-intakePower);
         } else {
             intake.setPower(0);
             leftIntakeServo.setPower(0);
