@@ -69,32 +69,32 @@ public class Teleop extends OpMode {
     }
 
     void launch() {
-        if (gamepad1.right_trigger_pressed) {
+        if (gamepad2.right_trigger_pressed) {
             launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
         } else {
             launcher.setVelocity(0);
         }
 
-        if (gamepad1.right_trigger_pressed && launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
+        if (gamepad2.right_trigger_pressed && launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
             windmillServo.setPower(-1);
+        } else if (gamepad2.right_bumper) {
+            windmillServo.setPower(1);
         } else {
             windmillServo.setPower(0);
         }
     }
 
     void intake() {
-        if (gamepad1.left_trigger_pressed) {
+        if (gamepad2.left_trigger_pressed) {
             intake.setPower(intakePower);
             leftIntakeServo.setPower(-intakePower);
             rightIntakeServo.setPower(-intakePower);
+        } else if(gamepad2.left_bumper) {
+            intake.setPower(-intakePower);
         } else {
             intake.setPower(0);
             leftIntakeServo.setPower(0);
             rightIntakeServo.setPower(0);
-        }
-
-        if(gamepad1.left_bumper) {
-            intake.setPower(-intakePower);
         }
     }
 
