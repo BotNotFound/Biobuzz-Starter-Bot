@@ -15,8 +15,10 @@ import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
@@ -26,26 +28,27 @@ public class PedroAuto extends LinearOpMode {
 
     private Follower follower;
     private DcMotorEx launcher;
-    private DcMotor transfer;
+    private CRServo transfer;
 
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
-    private final Pose start = poseFactory.of(56, 8, 90);
-    private final Pose start_2 = poseFactory.of(56, 8, 270);
-    private final Pose backEnd = poseFactory.of(56, 36, 270);
+
+    private final Pose start = poseFactory.of(56, 8, 270);
+    private final Pose parkingPath = poseFactory.of(10, 106, 180);
+    private final Pose parkingPathControl1 = poseFactory.of(27.5242, 49.8596, 0);
 
     // Autonomous routine
     public Command autoRoutine() {
         return sequential(
                 instant(() -> launcher.setVelocity(1450)),
                 waitMs(3000),
-                instant(() -> transfer.setPower(1)),
-                follow(follower, startPath()),
+                instant(() -> transfer.setPower(-1)),
+                follow(follower, startingPath()),
                 instant(() -> {
                     launcher.setVelocity(0);
                     transfer.setPower(0);
                 }),
-                follow(follower, backEnd())
+                follow(follower, parkingPath())
         );
     }
 
@@ -57,7 +60,7 @@ public class PedroAuto extends LinearOpMode {
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(40, 0, 0, 12.5));
 
-        transfer = hardwareMap.get(DcMotor.class, "transfer");
+        transfer = hardwareMap.get(CRServo.class, "windmill");
 
         follower.setPose(start);
         follower.update();
@@ -82,11 +85,7 @@ public class PedroAuto extends LinearOpMode {
         }
     }
 
-    public Path startPath() {
-        return line(start, start_2).constant(start_2);
-    }
-
-    public Path backEnd() {
-        return line(start_2, backEnd).constant(backEnd);
+    public Path parkingPath() {
+        return curve(start, parkingPathControl1, parkingPath).linear(start, parkingPath);
     }
 }
