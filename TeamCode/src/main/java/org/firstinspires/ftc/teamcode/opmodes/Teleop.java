@@ -15,8 +15,8 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 @TeleOp
 public class Teleop extends OpMode {
-    private static final double LAUNCHER_TARGET_VELOCITY = 1350;
-    private static final double LAUNCHER_MIN_VELOCITY = 1300;
+    private static final double LAUNCHER_TARGET_VELOCITY = 1450;
+    private static final double LAUNCHER_MIN_VELOCITY = 1400;
 
     public static double intakePower = 1.0;
     private DcMotor intake;
