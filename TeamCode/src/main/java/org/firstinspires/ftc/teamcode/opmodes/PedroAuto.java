@@ -43,7 +43,6 @@ public class PedroAuto extends LinearOpMode {
                 instant(() -> launcher.setVelocity(1450)),
                 waitMs(3000),
                 instant(() -> transfer.setPower(-1)),
-                follow(follower, startingPath()),
                 instant(() -> {
                     launcher.setVelocity(0);
                     transfer.setPower(0);
