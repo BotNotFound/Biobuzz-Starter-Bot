@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import static com.pedropathing.api.Paths.*;
 
@@ -18,7 +18,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
@@ -33,9 +32,9 @@ public class PedroAuto extends LinearOpMode {
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
 
-    private final Pose start = poseFactory.of(56, 8, 270);
-    private final Pose parkingPath = poseFactory.of(10, 106, 180);
-    private final Pose parkingPathControl1 = poseFactory.of(27.5242, 49.8596, 0);
+    private final Pose parkingPathStart = poseFactory.of(56.3516, 9.582, 270);
+    private final Pose parkingPath = poseFactory.of(13.3398, 90.3559, 180);
+    private final Pose parkingPathControl1 = poseFactory.of(22.748, 41.050, 0);
 
     // Autonomous routine
     public Command autoRoutine() {
@@ -61,7 +60,7 @@ public class PedroAuto extends LinearOpMode {
 
         transfer = hardwareMap.get(CRServo.class, "windmill");
 
-        follower.setPose(start);
+        follower.setPose(parkingPathStart);
         follower.update();
 
         waitForStart();
@@ -85,6 +84,6 @@ public class PedroAuto extends LinearOpMode {
     }
 
     public Path parkingPath() {
-        return curve(start, parkingPathControl1, parkingPath).linear(start, parkingPath);
+        return curve(parkingPathStart, parkingPathControl1, parkingPath).linear(parkingPathStart, parkingPath);
     }
 }
