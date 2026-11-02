@@ -30,7 +30,7 @@ public class Teleop extends OpMode {
     public void init() {
         intake = hardwareMap.get(DcMotor.class, "intake");
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
-        windmillServo = hardwareMap.get(CRServo.class, "windmill");
+        windmillServo = hardwareMap.get(CRServo.class, "transfer");
         leftIntakeServo = hardwareMap.get(CRServo.class, "intakeleft");
         rightIntakeServo = hardwareMap.get(CRServo.class, "intakeright");
 

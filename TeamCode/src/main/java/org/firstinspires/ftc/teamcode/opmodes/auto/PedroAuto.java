@@ -58,7 +58,7 @@ public class PedroAuto extends LinearOpMode {
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(40, 0, 0, 12.5));
 
-        transfer = hardwareMap.get(CRServo.class, "windmill");
+        transfer = hardwareMap.get(CRServo.class, "transfer");
 
         follower.setPose(parkingPathStart);
         follower.update();
