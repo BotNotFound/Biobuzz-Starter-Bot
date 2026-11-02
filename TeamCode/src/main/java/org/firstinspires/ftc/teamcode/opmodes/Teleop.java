@@ -23,6 +23,7 @@ public class Teleop extends OpMode {
     private CRServo leftIntakeServo;
     private CRServo rightIntakeServo;
     private CRServo windmillServo;
+    private CRServo transfer2Servo;
     private DcMotorEx launcher;
     private Follower follower;
 
@@ -31,6 +32,7 @@ public class Teleop extends OpMode {
         intake = hardwareMap.get(DcMotor.class, "intake");
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
         windmillServo = hardwareMap.get(CRServo.class, "transfer");
+        transfer2Servo = hardwareMap.get(CRServo.class, "transfer2");
         leftIntakeServo = hardwareMap.get(CRServo.class, "intakeleft");
         rightIntakeServo = hardwareMap.get(CRServo.class, "intakeright");
 
@@ -39,9 +41,10 @@ public class Teleop extends OpMode {
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(40, 0, 0, 12.5));
         leftIntakeServo.setPower(0);
         rightIntakeServo.setPower(0);
-        windmillServo.setPower(0);
+        setTransferPower(0);
         rightIntakeServo.setDirection(DcMotorSimple.Direction.REVERSE);
         windmillServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        transfer2Servo.setDirection(DcMotorSimple.Direction.FORWARD);
         telemetry.addData("Status", "Initialized");
 
         follower.setPose(new Pose(0,0,Math.toRadians(0)));
@@ -80,12 +83,18 @@ public class Teleop extends OpMode {
         }
 
         if (gamepad2.right_trigger_pressed && launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-            windmillServo.setPower(-1);
+            setTransferPower(-1);
         } else if (gamepad2.right_bumper) {
-            windmillServo.setPower(1);
+            setTransferPower(1);
         } else {
-            windmillServo.setPower(0);
+            setTransferPower(0);
         }
+    }
+
+    // transfer2 spins opposite to the first transfer
+    void setTransferPower(double power) {
+        windmillServo.setPower(power);
+        transfer2Servo.setPower(-power);
     }
 
     void intake() {

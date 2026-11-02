@@ -28,6 +28,7 @@ public class PedroAuto extends LinearOpMode {
     private Follower follower;
     private DcMotorEx launcher;
     private CRServo transfer;
+    private CRServo transfer2;
 
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
@@ -41,10 +42,14 @@ public class PedroAuto extends LinearOpMode {
         return sequential(
                 instant(() -> launcher.setVelocity(1450)),
                 waitMs(3000),
-                instant(() -> transfer.setPower(-1)),
+                instant(() -> {
+                    transfer.setPower(-1);
+                    transfer2.setPower(1);
+                }),
                 instant(() -> {
                     launcher.setVelocity(0);
                     transfer.setPower(0);
+                    transfer2.setPower(0);
                 }),
                 follow(follower, parkingPath())
         );
@@ -59,6 +64,7 @@ public class PedroAuto extends LinearOpMode {
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(40, 0, 0, 12.5));
 
         transfer = hardwareMap.get(CRServo.class, "transfer");
+        transfer2 = hardwareMap.get(CRServo.class, "transfer2");
 
         follower.setPose(parkingPathStart);
         follower.update();
