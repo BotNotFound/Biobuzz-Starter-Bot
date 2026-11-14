@@ -20,28 +20,21 @@ public class Teleop extends OpMode {
 
     public static double intakePower = 1.0;
     private DcMotor intake;
-    private CRServo leftIntakeServo;
-    private CRServo rightIntakeServo;
-    private CRServo windmillServo;
+    private CRServo transferServo;
     private DcMotorEx launcher;
     private Follower follower;
 
     @Override
     public void init() {
-        intake = hardwareMap.get(DcMotor.class, "intake");
+        intake = hardwareMap.get(DcMotor.class, "intakeMotor");
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
-        windmillServo = hardwareMap.get(CRServo.class, "windmill");
-        leftIntakeServo = hardwareMap.get(CRServo.class, "intakeleft");
-        rightIntakeServo = hardwareMap.get(CRServo.class, "intakeright");
+        transferServo = hardwareMap.get(CRServo.class, "transferRight");
 
         follower = Constants.create(hardwareMap);
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(40, 0, 0, 12.5));
-        leftIntakeServo.setPower(0);
-        rightIntakeServo.setPower(0);
-        windmillServo.setPower(0);
-        rightIntakeServo.setDirection(DcMotorSimple.Direction.REVERSE);
-        windmillServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        transferServo.setPower(0);
+        transferServo.setDirection(DcMotorSimple.Direction.REVERSE);
         telemetry.addData("Status", "Initialized");
 
         follower.setPose(new Pose(0,0,Math.toRadians(0)));
@@ -80,25 +73,21 @@ public class Teleop extends OpMode {
         }
 
         if (gamepad2.right_trigger_pressed && launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-            windmillServo.setPower(-1);
+            transferServo.setPower(-1);
         } else if (gamepad2.right_bumper) {
-            windmillServo.setPower(1);
+            transferServo.setPower(1);
         } else {
-            windmillServo.setPower(0);
+            transferServo.setPower(0);
         }
     }
 
     void intake() {
         if (gamepad2.left_trigger_pressed) {
             intake.setPower(intakePower);
-            leftIntakeServo.setPower(-intakePower);
-            rightIntakeServo.setPower(-intakePower);
         } else if(gamepad2.left_bumper) {
             intake.setPower(-intakePower);
         } else {
             intake.setPower(0);
-            leftIntakeServo.setPower(0);
-            rightIntakeServo.setPower(0);
         }
     }
 
