@@ -18,20 +18,23 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
-@Autonomous(name = "RedShortPark", group = "Autonomous")
-public class RedShortPark extends LinearOpMode {
+@Autonomous(name = "HiveShoot", group = "Autonomous")
+public class HiveShoot extends LinearOpMode {
 
     private Follower follower;
 
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
-    private final Pose start = poseFactory.of(9.2531, 131.8715, 180);
-    private final Pose shortLeavePark = poseFactory.of(12.2436, 121.4666, 180);
+    private final Pose start = poseFactory.of(59, 9, 90);
+    private final Pose startPark = poseFactory.of(59, 9, 270);
+    private final Pose parkpath = poseFactory.of(14.5852, 94.8487, 270);
+    private final Pose parkpathControl1 = poseFactory.of(16.8155, 40.3749, 0);
 
     // Autonomous routine
     public Command autoRoutine() {
         return sequential(
-                follow(follower, shortLeavePark())
+                follow(follower, startPark()),
+                follow(follower, parkpath())
         );
     }
 
@@ -62,7 +65,11 @@ public class RedShortPark extends LinearOpMode {
         }
     }
 
-    public Path shortLeavePark() {
-        return Paths.line(start, shortLeavePark).linear(start, shortLeavePark);
+    public Path startPark() {
+        return Paths.line(start, startPark).constant(startPark);
+    }
+
+    public Path parkpath() {
+        return Paths.curve(startPark, parkpathControl1, parkpath).constant(parkpath);
     }
 }

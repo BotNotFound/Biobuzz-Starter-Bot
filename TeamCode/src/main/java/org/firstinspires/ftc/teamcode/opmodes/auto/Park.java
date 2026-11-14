@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import static com.pedropathing.api.Paths.*;
+import com.pedropathing.api.Paths;
 
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.follower.Follower;
@@ -15,38 +16,25 @@ import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
-@Autonomous(name = "AutoPath", group = "Autonomous")
-public class PedroAuto extends LinearOpMode {
+@Autonomous(name = "Park", group = "Autonomous")
+public class Park extends LinearOpMode {
 
     private Follower follower;
-    private DcMotorEx launcher;
-    private CRServo transfer;
 
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
-
-    private final Pose parkingPathStart = poseFactory.of(56.3516, 9.582, 270);
-    private final Pose parkingPath = poseFactory.of(13.3398, 90.3559, 180);
-    private final Pose parkingPathControl1 = poseFactory.of(22.748, 41.050, 0);
+    private final Pose start = poseFactory.of(59, 9, 90);
+    private final Pose startPark = poseFactory.of(59, 9, 270);
+    private final Pose parkpath = poseFactory.of(14.5852, 94.8487, 270);
+    private final Pose parkpathControl1 = poseFactory.of(16.8155, 40.3749, 0);
 
     // Autonomous routine
     public Command autoRoutine() {
         return sequential(
-                instant(() -> launcher.setVelocity(1450)),
-                waitMs(3000),
-                instant(() -> transfer.setPower(-1)),
-                instant(() -> {
-                    launcher.setVelocity(0);
-                    transfer.setPower(0);
-                }),
-                follow(follower, parkingPath())
+                follow(follower, startPark()),
+                follow(follower, parkpath())
         );
     }
 
@@ -54,13 +42,7 @@ public class PedroAuto extends LinearOpMode {
     public void runOpMode() {
         Scheduler.reset();
         follower = Constants.create(hardwareMap);
-        launcher = hardwareMap.get(DcMotorEx.class, "launcher");
-        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(40, 0, 0, 12.5));
-
-        transfer = hardwareMap.get(CRServo.class, "windmill");
-
-        follower.setPose(parkingPathStart);
+        follower.setPose(start);
         follower.update();
 
         waitForStart();
@@ -83,7 +65,11 @@ public class PedroAuto extends LinearOpMode {
         }
     }
 
-    public Path parkingPath() {
-        return curve(parkingPathStart, parkingPathControl1, parkingPath).linear(parkingPathStart, parkingPath);
+    public Path startPark() {
+        return Paths.line(start, startPark).constant(startPark);
+    }
+
+    public Path parkpath() {
+        return Paths.curve(startPark, parkpathControl1, parkpath).constant(parkpath);
     }
 }
