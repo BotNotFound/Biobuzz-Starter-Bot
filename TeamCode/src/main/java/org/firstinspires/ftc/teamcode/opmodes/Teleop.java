@@ -15,8 +15,8 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 @TeleOp
 public class Teleop extends OpMode {
-    public static final double LAUNCHER_TARGET_VELOCITY = 1450;
-    public static final double LAUNCHER_MIN_VELOCITY = 1400;
+    public static final double LAUNCHER_TARGET_VELOCITY = 1280;
+    public static final double LAUNCHER_MIN_VELOCITY = 1200;
 
     public static double intakePower = 1.0;
     private DcMotor intake;
@@ -72,7 +72,7 @@ public class Teleop extends OpMode {
             launcher.setVelocity(0);
         }
 
-        if (gamepad2.right_trigger_pressed && launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
+        if (gamepad2.right_trigger_pressed) {
             transferServo.setPower(-1);
         } else if (gamepad2.right_bumper) {
             transferServo.setPower(1);
@@ -82,7 +82,7 @@ public class Teleop extends OpMode {
     }
 
     void intake() {
-        if (gamepad2.left_trigger_pressed) {
+        if (gamepad2.left_trigger_pressed || gamepad2.right_trigger_pressed) {
             intake.setPower(intakePower);
         } else if(gamepad2.left_bumper) {
             intake.setPower(-intakePower);
