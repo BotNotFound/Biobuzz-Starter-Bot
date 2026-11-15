@@ -28,6 +28,9 @@ public class Teleop extends OpMode {
     public static double intakePower = 1.0;
     private final ElapsedTime shootTimer = new ElapsedTime();
     private boolean shootWasPressed = false;
+    public static final double LAUNCHER_STEP = 20;
+    private double launcherOffset = 0;
+    private boolean aWasPressed = false;
     private DcMotor intake;
     private CRServo transferServo;
     private DcMotorEx launcher;
@@ -129,7 +132,17 @@ public class Teleop extends OpMode {
         }
     }
 
+    // Controller 2: each A press raises the shooter speed by LAUNCHER_STEP
+    private void updateLauncherOffset() {
+        boolean pressed = gamepad2.a;
+        if (pressed && !aWasPressed) {
+            launcherOffset += LAUNCHER_STEP;
+        }
+        aWasPressed = pressed;
+    }
+
     void launch() {
+        updateLauncherOffset();
         if (gamepad2.right_trigger_pressed) {
             double target = LAUNCHER_TARGET_VELOCITY;
             if (aimbot != null && aimbot.isEnabled()) {
@@ -138,8 +151,10 @@ public class Teleop extends OpMode {
                 telemetry.addData("Aimbot range (in)", aimbot.getRange());
                 telemetry.addData("Aimbot yaw (deg)", aimbot.getYaw());
             }
+            target += launcherOffset;
             launcher.setVelocity(target);
             telemetry.addData("Launcher target", target);
+            telemetry.addData("Launcher offset", launcherOffset);
         } else {
             launcher.setVelocity(0);
         }
