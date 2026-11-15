@@ -18,12 +18,13 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
-@Autonomous(name = "AutoPath", group = "Autonomous")
-public class PedroAuto extends LinearOpMode {
+@Autonomous(name = "Park", group = "Autonomous")
+public class Park extends LinearOpMode {
 
     private Follower follower;
     private DcMotorEx launcher;
@@ -33,8 +34,8 @@ public class PedroAuto extends LinearOpMode {
 
 
     private final Pose parkingPathStart = poseFactory.of(56.3516, 9.582, 270);
-    private final Pose parkingPath = poseFactory.of(13.3398, 90.3559, 180);
-    private final Pose parkingPathControl1 = poseFactory.of(22.748, 41.050, 0);
+    private final Pose parkingPath = poseFactory.of(14.5852, 94.8487, 180);
+    private final Pose parkingPathControl1 = poseFactory.of(16.8155, 40.3749, 0);
 
     // Autonomous routine
     public Command autoRoutine() {
@@ -58,7 +59,8 @@ public class PedroAuto extends LinearOpMode {
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(40, 0, 0, 12.5));
 
-        transfer = hardwareMap.get(CRServo.class, "windmill");
+        transfer = hardwareMap.get(CRServo.class, "transferRight");
+        transfer.setDirection(DcMotorSimple.Direction.REVERSE);
 
         follower.setPose(parkingPathStart);
         follower.update();
