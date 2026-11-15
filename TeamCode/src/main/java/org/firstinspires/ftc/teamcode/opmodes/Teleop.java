@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Aimbot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
@@ -19,7 +20,14 @@ public class Teleop extends OpMode {
     public static final double LAUNCHER_TARGET_VELOCITY = 1280;
     public static final double LAUNCHER_MIN_VELOCITY = 1200;
 
+    // Delay after pressing RT before transfer + intake start, so the shooter can spin up
+    public static final double SHOOT_FEED_DELAY_MS = 1500;
+    // Drivetrain speed multiplier while controller 1's left trigger is held
+    public static final double SLOW_MODE_SCALE = 0.5;
+
     public static double intakePower = 1.0;
+    private final ElapsedTime shootTimer = new ElapsedTime();
+    private boolean shootWasPressed = false;
     private DcMotor intake;
     private CRServo transferServo;
     private DcMotorEx launcher;
@@ -61,15 +69,18 @@ public class Teleop extends OpMode {
     @Override
     public void loop() {
         updateAimbot();
-        double turn = scaleCubic(-gamepad1.right_stick_x);
+        updateShootTimer();
+
+        double driveScale = gamepad1.left_trigger_pressed ? SLOW_MODE_SCALE : 1.0;
+        double turn = scaleCubic(-gamepad1.right_stick_x) * driveScale;
         if (aimbot != null && aimbot.isEnabled() && gamepad2.right_trigger_pressed) {
             // Auto-aim overrides driver rotation while shooting
             turn = aimbot.getTurnPower();
         }
 
         DrivePowers powers = ManualDrive.fieldCentric(
-                scaleCubic(-gamepad1.left_stick_y),
-                scaleCubic(-gamepad1.left_stick_x),
+                scaleCubic(-gamepad1.left_stick_y) * driveScale,
+                scaleCubic(-gamepad1.left_stick_x) * driveScale,
                 turn,
                 follower.pose().heading()
         );
@@ -85,6 +96,19 @@ public class Teleop extends OpMode {
         }
 
         telemetry.addData("Robot Heading", Math.toDegrees(follower.pose().heading()));
+    }
+
+    // Restart the spin-up delay each time RT is pressed
+    private void updateShootTimer() {
+        boolean pressed = gamepad2.right_trigger_pressed;
+        if (pressed && !shootWasPressed) {
+            shootTimer.reset();
+        }
+        shootWasPressed = pressed;
+    }
+
+    private boolean feedReady() {
+        return gamepad2.right_trigger_pressed && shootTimer.milliseconds() >= SHOOT_FEED_DELAY_MS;
     }
 
     // Controller 2: Y = Aimbot on, X = Aimbot off
@@ -118,7 +142,7 @@ public class Teleop extends OpMode {
             launcher.setVelocity(0);
         }
 
-        if (gamepad2.right_trigger_pressed) {
+        if (feedReady()) {
             transferServo.setPower(-1);
         } else if (gamepad2.right_bumper) {
             transferServo.setPower(1);
@@ -128,7 +152,7 @@ public class Teleop extends OpMode {
     }
 
     void intake() {
-        if (gamepad2.left_trigger_pressed || gamepad2.right_trigger_pressed) {
+        if (gamepad2.left_trigger_pressed || feedReady()) {
             intake.setPower(intakePower);
         } else if(gamepad2.left_bumper) {
             intake.setPower(-intakePower);
