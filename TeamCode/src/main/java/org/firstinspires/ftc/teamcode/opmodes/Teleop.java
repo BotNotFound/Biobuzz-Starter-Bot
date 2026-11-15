@@ -119,10 +119,12 @@ public class Teleop extends OpMode {
         } else if (gamepad2.x) {
             aimbot.setEnabled(false);
         }
-        aimbot.update();
+        aimbot.update(follower.pose().x(), follower.pose().y(), follower.pose().heading());
         telemetry.addData("Aimbot", aimbot.isEnabled() ? "ACTIVE" : "OFF");
         if (aimbot.isEnabled()) {
-            telemetry.addData("Aimbot tag visible", aimbot.isTagVisible());
+            telemetry.addData("Aimbot source", aimbot.isTagVisible() ? "LIVE"
+                    : aimbot.isUsingMemory() ? "MEMORY" : "NONE");
+            telemetry.addData("Aimbot error", aimbot.getError());
             telemetry.addData("Aimbot aligned", aimbot.isAligned());
         }
     }
@@ -162,6 +164,8 @@ public class Teleop extends OpMode {
     }
 
     void resetGyro() {
+        // The remembered tag position is in the old heading frame, so it is no longer valid
+        if (aimbot != null) aimbot.clearMemory();
         follower.setPose(follower.pose().withHeading(Math.toRadians(0)));
     }
 }

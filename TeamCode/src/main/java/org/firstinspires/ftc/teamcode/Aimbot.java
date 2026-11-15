@@ -73,6 +73,13 @@ public class Aimbot {
     private double lastYaw = 0;             // degrees
     private long lastPoseTimeMs = 0;
 
+    // Remembered tag position in the odometry (field) frame, in inches. Recorded when the tag is
+    // seen, so the robot can keep aiming at it from places where the camera can't see it.
+    private boolean hasMemory = false;
+    private boolean usingMemory = false;
+    private double tagX = 0;
+    private double tagY = 0;
+
     public Aimbot(HardwareMap hardwareMap, int[] targetIds) {
         this.targetIds = targetIds;
 
@@ -123,9 +130,37 @@ public class Aimbot {
         return false;
     }
 
-    /** Reads the latest detections. Call once per loop while Aimbot is enabled. */
-    public void update() {
+    /** Forget the remembered tag position (call whenever the odometry frame changes). */
+    public void clearMemory() {
+        hasMemory = false;
+        usingMemory = false;
+    }
+
+    public boolean hasMemory() {
+        return hasMemory;
+    }
+
+    /** True while aiming from the remembered position because the tag isn't in view. */
+    public boolean isUsingMemory() {
+        return usingMemory;
+    }
+
+    private static double wrapAngle(double a) {
+        while (a > Math.PI) a -= 2 * Math.PI;
+        while (a < -Math.PI) a += 2 * Math.PI;
+        return a;
+    }
+
+    /**
+     * Reads the latest detections. Call once per loop while Aimbot is enabled.
+     *
+     * @param robotX       odometry x (inches)
+     * @param robotY       odometry y (inches)
+     * @param robotHeading odometry heading (radians, counterclockwise positive, Pedro convention)
+     */
+    public void update(double robotX, double robotY, double robotHeading) {
         tagVisible = false;
+        usingMemory = false;
         if (!enabled) return;
 
         // Of the alliance tags in view, aim at the one closest to the image center
@@ -140,28 +175,50 @@ public class Aimbot {
                 target = single;
             }
         }
-        if (target == null) return;
-        tagVisible = true;
-
-        if (target.ftcPose != null) {
-            lastRange = target.ftcPose.range;
-            lastYaw = target.ftcPose.yaw;
-            lastPoseTimeMs = System.currentTimeMillis();
+        if (target == null) {
+            if (hasMemory) {
+                // Tag not in view: aim at where we remembered it, using odometry
+                double dx = tagX - robotX;
+                double dy = tagY - robotY;
+                double ccw = wrapAngle(Math.atan2(dy, dx) - robotHeading);
+                // Same convention as the live error: right of the robot = positive
+                error = -ccw / HALF_FOV;
+                lastRange = Math.hypot(dx, dy);
+                lastPoseTimeMs = System.currentTimeMillis();
+                usingMemory = true;
+            }
+            return;
         }
+        tagVisible = true;
 
         // Horizontal angle to the tag from the optical axis (right = positive), via the camera
         // intrinsics, normalized by the half FOV so the image edge is about +/-1
-        error = Math.atan2(target.center.x - CX, FX) / HALF_FOV;
+        double angleRight = Math.atan2(target.center.x - CX, FX);
+        error = angleRight / HALF_FOV;
+
+        if (target.ftcPose != null) {
+            double range = target.ftcPose.range * Math.cos(Math.toRadians(target.ftcPose.elevation));
+            lastRange = range;
+            lastYaw = target.ftcPose.yaw;
+            lastPoseTimeMs = System.currentTimeMillis();
+
+            // Record where the tag is in the odometry frame (refreshed every sighting, which also
+            // corrects drift). The camera faces the same way as the robot's heading.
+            double tagAngle = robotHeading - angleRight;
+            tagX = robotX + range * Math.cos(tagAngle);
+            tagY = robotY + range * Math.sin(tagAngle);
+            hasMemory = true;
+        }
     }
 
     /**
      * Rotation power to center the target tag (uses the last {@link #update()}). Positive =
-     * counterclockwise (Pedro convention). Returns 0 if disabled, the tag isn't seen, or the
-     * robot is already aligned.
+     * counterclockwise (Pedro convention). Returns 0 if disabled, the tag is neither seen nor
+     * remembered, or the robot is already aligned.
      */
     public double getTurnPower() {
         aligned = false;
-        if (!enabled || !tagVisible) return 0;
+        if (!enabled || !(tagVisible || usingMemory)) return 0;
 
         if (Math.abs(error) < deadband) {
             aligned = true;
@@ -177,7 +234,7 @@ public class Aimbot {
     /** True if a recent tag distance measurement is available. */
     public boolean hasRange() {
         return enabled && !Double.isNaN(lastRange)
-                && System.currentTimeMillis() - lastPoseTimeMs <= poseHoldMs;
+                && (usingMemory || System.currentTimeMillis() - lastPoseTimeMs <= poseHoldMs);
     }
 
     public double getRange() {
